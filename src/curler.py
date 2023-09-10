@@ -33,7 +33,9 @@ class SeleniumCurler(Curler):
     @property
     def selenium_webdriver(self):
         if self.__selenium_webdriver is None:
-            self.__selenium_webdriver = webdriver.Chrome()
+            options = webdriver.FirefoxOptions()
+            options.headless = True
+            self.__selenium_webdriver = webdriver.Firefox(options=options)
             self.__selenium_webdriver.maximize_window()
         return self.__selenium_webdriver
     
