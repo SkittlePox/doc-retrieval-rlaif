@@ -55,7 +55,6 @@ class WikipediaTextractor(Textractor):
     
     def textract(self, page_source: str) -> str:
         """TODO:
-        - remove references in text (e.g. [139])
         - remove See also
         - remove contents of References header
         - remove Bibliography
@@ -66,6 +65,8 @@ class WikipediaTextractor(Textractor):
         soup = BeautifulSoup(page_source, 'html.parser')
         main_content = soup.select_one('div#mw-content-text > div.mw-parser-output')
         main_content.select_one('div.reflist').extract()
+        for ref in main_content.select('sup.reference'):
+            ref.extract()
         for table in main_content.select('table'):
             table.extract()
         for img in main_content.select('img'):
