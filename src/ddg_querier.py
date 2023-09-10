@@ -4,6 +4,7 @@ import urllib
 from bs4 import BeautifulSoup
 
 from curler import SeleniumCurler
+from textractor import WikipediaTextractor, StackExchangeTextractor
 
 
 class DDGQuerier:
@@ -100,6 +101,31 @@ class DDGQuerier:
             ddg_source = self.curler.urlget(ddg_url)
             links += self.get_links_from_ddg_source(ddg_source)
         return links
+    
+
+def get_documents(query: str,
+                  ensemble_results: bool = True,
+                  top_k: int = 10) -> list[str]:
+    """
+    Given a query, return a list of documents.
+
+    Args:
+        query (str): The query to search for.
+
+    Returns:
+        list[str]: A list of document contents.
+    """
+    ddg_querier = DDGQuerier(ensemble_results=ensemble_results, top_k=top_k)
+    links = ddg_querier(query)
+    documents = []
+    for link in links:
+        if 'wikipedia.org' in link:
+            documents.append(WikipediaTextractor()(link))
+        elif 'stackoverflow.com' in link:
+            documents.append(StackExchangeTextractor()(link))
+        else:
+            raise RuntimeError(f'Unknown link: {link}')
+    return documents
 
 
 def main():
@@ -107,8 +133,8 @@ def main():
     ddg_querier = DDGQuerier(ensemble_results=True)
     while True:
         query = input('Query: ')
-        results = ddg_querier(query)
-        pp.pprint(results)
+        documents = get_documents(query)
+        pp.pprint(documents)
 
 
 if __name__ == '__main__':

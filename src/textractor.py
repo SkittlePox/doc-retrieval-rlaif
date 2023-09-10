@@ -54,6 +54,15 @@ class WikipediaTextractor(Textractor):
         return requests.get(url).text
     
     def textract(self, page_source: str) -> str:
+        """TODO:
+        - remove references in text (e.g. [139])
+        - remove See also
+        - remove contents of References header
+        - remove Bibliography
+        - remove External links
+        - remove consecutive newlines
+        - remove footer citations
+        """
         soup = BeautifulSoup(page_source, 'html.parser')
         main_content = soup.select_one('div#mw-content-text > div.mw-parser-output')
         main_content.select_one('div.reflist').extract()
