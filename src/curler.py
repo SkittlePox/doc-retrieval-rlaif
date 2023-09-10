@@ -67,7 +67,6 @@ class SeleniumCurler(Curler):
         return
 
     def urlget(self, url: str, buttons: tuple[tuple] = tuple()) -> str:
-        time.sleep(self.pre_wait_time)
         try:
             self.selenium_webdriver.get(url)
         except selenium.common.exceptions.TimeoutException:
