@@ -54,7 +54,8 @@ class StackExchangeTextractor(Textractor):
         text = []
         # get title
         question_header_element = soup.find('div', attrs={'id': 'question-header'})
-        text.append(question_header_element.get_text())
+        question_link_element = question_header_element.find('a', class_='question-hyperlink')
+        text.append(question_link_element.get_text())
         # get question/answer bodies
         for post in soup.find_all('div', class_='js-post-body'):
             text.append(re.sub(r'\n+', '\n', post.get_text().strip()))
