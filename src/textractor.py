@@ -1,5 +1,5 @@
 import pprint as pp
-import re
+import re, requests
 
 from bs4 import BeautifulSoup
 import requests
@@ -81,6 +81,17 @@ class StackExchangeTextractor(Textractor):
             text.append(re.sub(r'\n+', '\n', post.get_text().strip()))
         return '\n\n'.join(text)
     
+def WikipediaTextractor(url: str) -> str:
+    response = BeautifulSoup(requests.get(url).text, 'html.parser')
+    main_content = response.select_one('div#mw-content-text > div.mw-parser-output')
+    main_content.select_one('div.reflist').extract()
+    for table in main_content.select('table'):
+        table.extract()
+    for img in main_content.select('img'):
+        img.extract()
+    for figure in main_content.select('figure'):
+        figure.extract()
+    return main_content.get_text()
 
 if __name__ == '__main__':
     # test stackexchange extraction
