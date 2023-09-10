@@ -11,6 +11,13 @@ class Curler:
         pass
 
     def urlget(self, url: str) -> str:
+        """Get the page source of the given url.
+        
+        Args:
+            url (str)
+            
+        Returns:
+            str: page source"""
         raise NotImplementedError
 
 
