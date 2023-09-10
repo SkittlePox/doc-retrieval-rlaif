@@ -2,6 +2,7 @@ import pprint as pp
 import re
 
 from bs4 import BeautifulSoup
+import requests
 
 from curler import SeleniumCurler
 
@@ -46,6 +47,25 @@ class Textractor:
         return self.textract(page_source)
     
 
+class WikipediaTextractor(Textractor):
+    """Textractor for wikipedia"""
+    def urlget(self, url: str):
+        """Wrapper around requests urlget."""
+        return requests.get(url).text
+    
+    def textract(self, page_source: str) -> str:
+        soup = BeautifulSoup(page_source, 'html.parser')
+        main_content = soup.select_one('div#mw-content-text > div.mw-parser-output')
+        main_content.select_one('div.reflist').extract()
+        for table in main_content.select('table'):
+            table.extract()
+        for img in main_content.select('img'):
+            img.extract()
+        for figure in main_content.select('figure'):
+            figure.extract()
+        return main_content.get_text()
+    
+
 class StackExchangeTextractor(Textractor):
     """Textractor for stackexchange.com."""
 
@@ -63,8 +83,13 @@ class StackExchangeTextractor(Textractor):
     
 
 if __name__ == '__main__':
-    # test extraction
+    # test stackexchange extraction
     textractor = StackExchangeTextractor()
     url = 'https://stackoverflow.com/questions/31324218/scikit-learn-how-to-obtain-true-positive-true-negative-false-positive-and-fal'
+    text = textractor(url)
+    print(text)
+    # test wikipedia extraction
+    textractor = WikipediaTextractor()
+    url = 'https://en.wikipedia.org/wiki/Louis_XIV'
     text = textractor(url)
     print(text)

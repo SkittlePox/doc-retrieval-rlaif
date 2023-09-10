@@ -1,5 +1,5 @@
 import pprint as pp
-import urllib, requests
+import urllib
 
 from bs4 import BeautifulSoup
 
@@ -100,18 +100,6 @@ class DDGQuerier:
             ddg_source = self.curler.urlget(ddg_url)
             links += self.get_links_from_ddg_source(ddg_source)
         return links
-
-def WikipediaParser(url: str) -> str:
-    response = BeautifulSoup(requests.get(url).text, 'html.parser')
-    main_content = response.select_one('div#mw-content-text > div.mw-parser-output')
-    main_content.select_one('div.reflist').extract()
-    for table in main_content.select('table'):
-        table.extract()
-    for img in main_content.select('img'):
-        img.extract()
-    for figure in main_content.select('figure'):
-        figure.extract()
-    return main_content.get_text()
 
 
 def main():
