@@ -54,25 +54,32 @@ class WikipediaTextractor(Textractor):
         return requests.get(url).text
     
     def textract(self, page_source: str) -> str:
-        """TODO:
-        - remove references in text (e.g. [139])
-        - remove See also
-        - remove contents of References header
-        - remove Bibliography
-        - remove External links
-        - remove consecutive newlines
-        - remove footer citations
-        """
         soup = BeautifulSoup(page_source, 'html.parser')
         main_content = soup.select_one('div#mw-content-text > div.mw-parser-output')
         main_content.select_one('div.reflist').extract()
         for table in main_content.select('table'):
-            table.extract()
+            table.decompose()
         for img in main_content.select('img'):
-            img.extract()
+            img.decompose()
         for figure in main_content.select('figure'):
-            figure.extract()
-        return main_content.get_text()
+            figure.decompose()
+        # remove references in text
+        for sup_element in main_content.find_all('sup', class_='reference'):
+            sup_element.decompose()
+        # remove hatnotes
+        for hatnote in main_content.find_all('div', class_='hatnote'):
+            hatnote.decompose()
+        ## remove all text after See also header
+        # get see also element
+        see_also_element = main_content.find('span', id='See_also').find_parent('h2')
+        for element in see_also_element.find_next_siblings():
+            element.decompose()
+        see_also_element.decompose()
+        # extract text
+        text = main_content.get_text()
+        # remove consecutive newlines
+        text = re.sub(r'\n+', '\n', text)
+        return text
     
 
 class StackExchangeTextractor(Textractor):
@@ -93,10 +100,10 @@ class StackExchangeTextractor(Textractor):
 
 if __name__ == '__main__':
     # test stackexchange extraction
-    textractor = StackExchangeTextractor()
-    url = 'https://stackoverflow.com/questions/31324218/scikit-learn-how-to-obtain-true-positive-true-negative-false-positive-and-fal'
-    text = textractor(url)
-    print(text)
+    # textractor = StackExchangeTextractor()
+    # url = 'https://stackoverflow.com/questions/31324218/scikit-learn-how-to-obtain-true-positive-true-negative-false-positive-and-fal'
+    # text = textractor(url)
+    # print(text)
     # test wikipedia extraction
     textractor = WikipediaTextractor()
     url = 'https://en.wikipedia.org/wiki/Louis_XIV'
