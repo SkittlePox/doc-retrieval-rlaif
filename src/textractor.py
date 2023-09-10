@@ -96,18 +96,24 @@ class StackExchangeTextractor(Textractor):
         text.append(question_link_element.get_text())
         # get question/answer bodies
         for post in soup.find_all('div', class_='js-post-body'):
-            text.append(re.sub(r'\n+', '\n', post.get_text().strip()))
+            # surround code blocks with ```
+            for code_block in post.find_all('code'):
+                code_block.insert_before('```')
+                code_block.insert_after('```')
+            post_text = post.get_text().strip()
+            post_text = re.sub(r'\n+', '\n', post_text)
+            text.append(post_text)
         return '\n\n'.join(text)
 
 
 if __name__ == '__main__':
     # test stackexchange extraction
-    # textractor = StackExchangeTextractor()
-    # url = 'https://stackoverflow.com/questions/31324218/scikit-learn-how-to-obtain-true-positive-true-negative-false-positive-and-fal'
-    # text = textractor(url)
-    # print(text)
-    # test wikipedia extraction
-    textractor = WikipediaTextractor()
-    url = 'https://en.wikipedia.org/wiki/Louis_XIV'
+    textractor = StackExchangeTextractor()
+    url = 'https://stackoverflow.com/questions/31324218/scikit-learn-how-to-obtain-true-positive-true-negative-false-positive-and-fal'
     text = textractor(url)
     print(text)
+    # test wikipedia extraction
+    # textractor = WikipediaTextractor()
+    # url = 'https://en.wikipedia.org/wiki/Louis_XIV'
+    # text = textractor(url)
+    # print(text)
