@@ -35,6 +35,7 @@ class SeleniumCurler(Curler):
         if self.__selenium_webdriver is None:
             options = webdriver.ChromeOptions()
             options.headless = True
+            options.add_argument('--no-sandbox')
             self.__selenium_webdriver = webdriver.Chrome(options=options)
             self.__selenium_webdriver.maximize_window()
         return self.__selenium_webdriver
