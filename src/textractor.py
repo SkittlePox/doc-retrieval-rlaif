@@ -57,6 +57,8 @@ class WikipediaTextractor(Textractor):
         soup = BeautifulSoup(page_source, 'html.parser')
         main_content = soup.select_one('div#mw-content-text > div.mw-parser-output')
         main_content.select_one('div.reflist').extract()
+        for ref in main_content.select('sup.reference'):
+            ref.extract()
         for table in main_content.select('table'):
             table.decompose()
         for img in main_content.select('img'):
