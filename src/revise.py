@@ -12,6 +12,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import openai
 import autocrit
 
+from .reward_model import RewardModel
+
 if os.environ.get("OPENAI_API_KEY", "") == "":
     raise Exception("Please set OPENAI_API_KEY environment variable.")
 
@@ -91,7 +93,8 @@ if __name__ == '__main__':
     get_answer = lambda prompt: autocrit.generate(accelerator.unwrap_model(model), tokenizer, few_shots + prompt)[0]
     get_critique = lambda prompt: autocrit.generate(accelerator.unwrap_model(model), tokenizer, few_shots + prompt)[0]
 
-    # I think this needs to be re-written because we already have the completions before we run autocrit.revise.
+
+    reward_model = RewardModel()
 
     revisions = autocrit.revise(
         prompts,
@@ -104,14 +107,14 @@ if __name__ == '__main__':
             },
         ],
         max_iterations=2,
-        # score_fn=lambda question, answer: evaluate_unsafe([question], [answer])[0]
+        score_fn=lambda question, answer: reward_model.get_reward(question, answer)
     )
 
-    if accelerator.is_main_process:
-        with open(f"artifacts/revisions-{args.model_path.split('/')[-1]}-{args.data_path.split('/')[-1].split('.')[0]}.json", "w") as f:
-            json.dump(revisions, f)
+    # if accelerator.is_main_process:
+    #     with open(f"artifacts/revisions-{args.model_path.split('/')[-1]}-{args.data_path.split('/')[-1].split('.')[0]}.json", "w") as f:
+    #         json.dump(revisions, f)
 
-        n_safe_prior = sum([x["iterations"][0]["score"] for x in revisions])
-        n_safe_revised = sum([x["iterations"][-1]["score"] for x in revisions])
+    #     n_safe_prior = sum([x["iterations"][0]["score"] for x in revisions])
+    #     n_safe_revised = sum([x["iterations"][-1]["score"] for x in revisions])
 
-        print(f"#prior safe: {n_safe_prior}/{len(revisions)} → #revised safe: {n_safe_revised}/{len(revisions)}")
+    #     print(f"#prior safe: {n_safe_prior}/{len(revisions)} → #revised safe: {n_safe_revised}/{len(revisions)}")
