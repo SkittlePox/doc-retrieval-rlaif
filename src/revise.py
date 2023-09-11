@@ -12,7 +12,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import openai
 import autocrit
 
-from .reward_model import RewardModel
+from reward_model import RewardModel
 
 if os.environ.get("OPENAI_API_KEY", "") == "":
     raise Exception("Please set OPENAI_API_KEY environment variable.")
